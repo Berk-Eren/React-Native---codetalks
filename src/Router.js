@@ -66,7 +66,7 @@ function Router() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
-        {userId.length > 0 ? (
+        {userId ? (
           <Stack.Screen name="RoomsAndMessages" component={RoomsAndMessages} />
         ) : (
           <Stack.Screen name="LogInSignUp" component={LogInSignUp} />

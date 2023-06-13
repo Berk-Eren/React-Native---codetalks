@@ -11,17 +11,11 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 
-import auth from '@react-native-firebase/auth';
-
 import styles from './Login.styles';
 
 function Login({navigation}) {
   const [email, setEmail] = useState('');
   const [password1, setPassword1] = useState('');
-
-  useEffect(() => {
-    auth().onAuthStateChanged(user => console.log(user));
-  }, []);
 
   return (
     <KeyboardAvoidingView style={styles.container}>

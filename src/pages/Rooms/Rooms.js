@@ -1,32 +1,46 @@
-import {View, FlatList} from 'react-native';
+import {useState, useEffect} from 'react';
+
+import {View, FlatList, StatusBar} from 'react-native';
+import database from '@react-native-firebase/database';
+import {firebase} from '@react-native-firebase/database';
 
 import RoomCard from '../../components/RoomCard/RoomCard';
 
 import styles from './Rooms.styles';
 
-function Rooms() {
-  const DATA = [
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: 'First Item',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      title: 'Second Item',
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      title: 'Third Item',
-    },
-  ];
+function Rooms({navigation}) {
+  const [roomList, setRoomList] = useState([]);
+
+  const goToMessagePageOf = title => {
+    navigation.navigate('Messages', {
+      roomName: title,
+    });
+  };
+
+  useEffect(() => {
+    firebase
+      .app()
+      .database()
+      .ref('/codetalks/rooms')
+      .once('value')
+      .then(snapshot => {
+        setRoomList([...Object.keys(snapshot.val())]);
+      });
+  }, []);
 
   return (
     <View style={styles.container}>
+      <StatusBar animated barStyle="dark-content" backgroundColor="white" />
       <FlatList
-        data={DATA}
+        data={roomList}
         numColumns={2}
         horizontal={false}
-        renderItem={item => <RoomCard title={item.item.title} />}
+        renderItem={item => (
+          <RoomCard
+            onPress={() => goToMessagePageOf(item.item)}
+            title={item.item}
+          />
+        )}
         style={styles.flatList}
         columnWrapperStyle={{
           justifyContent: 'space-between',
