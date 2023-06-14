@@ -1,8 +1,9 @@
 import {useState, useEffect} from 'react';
 
 import {View, FlatList, StatusBar} from 'react-native';
-import database from '@react-native-firebase/database';
+
 import {firebase} from '@react-native-firebase/database';
+import {FIREBASE_URL} from '@env';
 
 import RoomCard from '../../components/RoomCard/RoomCard';
 
@@ -20,7 +21,7 @@ function Rooms({navigation}) {
   useEffect(() => {
     firebase
       .app()
-      .database()
+      .database(FIREBASE_URL)
       .ref('/codetalks/rooms')
       .once('value')
       .then(snapshot => {
