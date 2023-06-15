@@ -17,92 +17,82 @@ import {FIREBASE_URL} from '@env';
 
 import MessageCard from '../../components/MessageCard/MessageCard';
 
+import ErrorModal from '../../components/modals/ErrorModal/ErrorModal';
+import TextInputModal from '../../components/modals/TextInputModal/TextInputModal';
+
+import useMessage from '../../hooks/useMessage';
+
 import styles from './Messages.styles';
-import {is} from 'date-fns/locale';
 
 function Messages({route}) {
   const {roomName} = route.params;
 
-  const textInput = useRef();
+  const [messages, error, isErrorVisible, sentMessage] = useMessage(
+    `/codetalks/rooms/${roomName}/messages`,
+  );
 
-  const [message, setMessage] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [messages, setMessageList] = useState([]);
+  // const reference = firebase
+  //   .app()
+  //   .database(FIREBASE_URL)
+  //   .ref(`/codetalks/rooms/${roomName}/messages`)
+  //   .push();
 
-  useEffect(() => {
-    firebase
-      .app()
-      .database(FIREBASE_URL)
-      .ref(`/codetalks/rooms/${roomName}/messages`)
-      .once('value')
-      .then(snapshot => {
-        setMessageList([...snapshot.val()]);
-      })
-      .catch(err => console.log(err));
-  }, []);
+  // const [messages, setMessageList] = useState({});
 
-  const addMessageToTheRoom = () => {
-    setIsVisible(!isVisible);
-    firebase
-      .app()
-      .database(FIREBASE_URL)
-      .ref(`/codetalks/rooms/${roomName}/messages`)
-      .child(messages.length.toString())
-      .set(message)
-      .then(() => {
-        setMessageList([...messages, msg]);
-      })
-      .catch(error => {
-        // TODO: Add a custom catch method
-      });
-  };
+  // useEffect(() => {
+  //   firebase
+  //     .app()
+  //     .database(FIREBASE_URL)
+  //     .ref(`/codetalks/rooms/${roomName}/messages`)
+  //     .on('value', snapshot => {
+  //       setMessageList({...snapshot.val()});
+  //     });
+  // }, []);
+
+  // const addMessageToTheRoom = msg => {
+  //   const messageObj = {
+  //     text: msg,
+  //     timestamp: new Date().toString(),
+  //   };
+
+  //   reference.set(messageObj).catch(error => {
+  //     // TODO: Add a custom catch method
+  //   });
+  // };
 
   // TODO: ScollView ekle
+
   return (
     <View style={{flex: 1}}>
       <StatusBar animated barStyle="dark-content" backgroundColor="white" />
       <ScrollView style={styles.background}>
-        {messages.map((item, index) => (
-          <View key={index} style={styles.scrollContainer}>
-            <MessageCard />
+        {Object.entries(messages).map(item => (
+          <View key={item[0]} style={styles.scrollContainer}>
+            <MessageCard
+              message={item[1]['text']}
+              timestamp={item[1]['timestamp']}
+            />
           </View>
         ))}
       </ScrollView>
-      <TouchableHighlight
-        onPress={() => setModalVisible(!modalVisible)}
-        style={styles.iconContainer}>
-        <Icon name="plus-a" size={30} color="white" />
-      </TouchableHighlight>
-      <Modal animationType="fade" transparent={true} visible={modalVisible}>
-        <View style={styles.modalContainer}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              textInput.current.focus();
-            }}>
-            <View style={{flex: 1}}>
-              <View style={styles.textInputContainer}>
-                <TextInput
-                  placeholder="Enter your message..."
-                  value={message}
-                  onChangeText={setMessage}
-                  ref={textInput}
-                  style={{paddingHorizontal: 15, paddingVertical: 10}}
-                  multiline
-                />
-              </View>
-              <View style={styles.sendButtonContainer}>
-                <Button title="Ekle" onPress={() => addMessageToTheRoom()} />
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-        <TouchableHighlight
-          onPress={() => setModalVisible(!modalVisible)}
-          style={styles.iconContainer}>
-          <Icon name="minus-a" size={30} color="white" />
-        </TouchableHighlight>
-      </Modal>
+      <TextInputModal onPressFunction={sentMessage} />
+    </View>
+  );
+  return (
+    <View style={{flex: 1}}>
+      <StatusBar animated barStyle="dark-content" backgroundColor="white" />
+      <ScrollView style={styles.background}>
+        {Object.entries(messages).map(item => (
+          <View key={item[0]} style={styles.scrollContainer}>
+            <MessageCard
+              message={item[1]['text']}
+              timestamp={item[1]['timestamp']}
+            />
+          </View>
+        ))}
+      </ScrollView>
+      <ErrorModal isVisible={error} />
+      <TextInputModal onPressFunction={sentMessage} />
     </View>
   );
 }

@@ -6,11 +6,26 @@ import {firebase} from '@react-native-firebase/database';
 import {FIREBASE_URL} from '@env';
 
 import RoomCard from '../../components/RoomCard/RoomCard';
+import TextInputModal from '../../components/modals/TextInputModal/TextInputModal';
 
 import styles from './Rooms.styles';
 
 function Rooms({navigation}) {
   const [roomList, setRoomList] = useState([]);
+
+  const reference = firebase
+    .app()
+    .database(FIREBASE_URL)
+    .ref(`/codetalks/rooms`);
+
+  const addRoom = roomName => {
+    reference
+      .child(roomName)
+      .set('')
+      .catch(error => {
+        // TODO: Add a custom catch method
+      });
+  };
 
   const goToMessagePageOf = title => {
     navigation.navigate('Messages', {
@@ -23,9 +38,8 @@ function Rooms({navigation}) {
       .app()
       .database(FIREBASE_URL)
       .ref('/codetalks/rooms')
-      .once('value')
-      .then(snapshot => {
-        setRoomList([...Object.keys(snapshot.val())]);
+      .on('value', snapshot => {
+        if (snapshot.val()) setRoomList([...Object.keys(snapshot.val())]);
       });
   }, []);
 
@@ -47,8 +61,9 @@ function Rooms({navigation}) {
           justifyContent: 'space-between',
         }}
         ItemSeparatorComponent={() => <View style={{margin: 10}} />}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item}
       />
+      <TextInputModal onPressFunction={addRoom} />
     </View>
   );
 }
